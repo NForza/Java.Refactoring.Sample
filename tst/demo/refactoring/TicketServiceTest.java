@@ -13,7 +13,7 @@ public class TicketServiceTest {
 	private TicketRepository mock;
 	
 	@Before
-	public void setUp() throws NoTicketsAvailableException {
+	public void setUp() {
 		mock = createNiceMock(TicketRepository.class);
 		
 		service = new TicketService(mock);
