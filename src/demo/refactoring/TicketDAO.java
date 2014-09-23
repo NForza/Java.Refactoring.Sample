@@ -3,7 +3,7 @@ package demo.refactoring;
 import java.util.Hashtable;
 import java.util.Random;
 
-public class TicketDAO {
+public class TicketDAO implements TicketRepository {
 	private Hashtable<String, Integer> tickets;
 	private Random r;
 	private int low = 3;

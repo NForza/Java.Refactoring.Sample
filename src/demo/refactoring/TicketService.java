@@ -3,8 +3,19 @@ package demo.refactoring;
 import java.util.Date;
 
 public class TicketService {
+	private TicketRepository repository;
+
+
+	public TicketService() {
+		repository = new TicketDAO();
+	}
+	
+	public TicketService(TicketRepository repo) {
+		repository = repo;
+	}
+	
 	public Ticket orderTicket(String concertCode, User user) throws NoTicketsAvailableException {
-		TicketDAO repository = new TicketDAO();
+		
 		Date now = new Date();
 		
 		if (repository.getAvailableTicketsForConcert(concertCode) < 1) {

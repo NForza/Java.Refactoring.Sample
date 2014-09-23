@@ -25,14 +25,32 @@ public class TicketServiceTest {
 	
 	@Before
 	public void setUp() {
-		service = new TicketService();
+		service = new TicketService(new FakeRepo());
 		currentUser = User.signIn("user", "secret");
 	}
 
 	@Test
-	public void testOrderTicket() throws NoTicketsAvailableException {
+	public void WhenOrderingAnAvailableTicket_ItShould_ReturnTheTicket() throws NoTicketsAvailableException {
 		Ticket expected = service.orderTicket("AAA", currentUser);
 		assertThat(expected, is(notNullValue()));
 	}
 
+	@Test
+	public void WhenOrderingAnAvailableTicket_ItShould_ReturnATicketForTheRightConcert() throws NoTicketsAvailableException {
+		Ticket expected = service.orderTicket("AAA", currentUser);
+		assertThat(expected.getConcertCode(), is(equalTo("AAA")));
+	}
+
+	@Test(expected=NoTicketsAvailableException.class)
+	public void WhenOrderingAnUnAvailableTicket_ItShould_Throw() throws NoTicketsAvailableException {
+		Ticket expected = service.orderTicket("DDD", currentUser);
+		assertThat(expected.getConcertCode(), is(equalTo("DDD")));
+	}
+	
+	@Test(expected=NoTicketsAvailableException.class)
+	public void WhenOrderingATicketAfterStockRanOut_ItShould_Throw() throws NoTicketsAvailableException {
+		Ticket expected = service.orderTicket("AAA", currentUser);
+		expected = service.orderTicket("AAA", currentUser);
+		assertThat(expected.getConcertCode(), is(equalTo("AAA")));
+	}
 }
