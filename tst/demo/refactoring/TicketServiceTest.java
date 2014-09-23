@@ -2,10 +2,11 @@ package demo.refactoring;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.easymock.EasyMock.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 public class TicketServiceTest {
 	private TicketService service;
@@ -14,7 +15,7 @@ public class TicketServiceTest {
 	
 	@Before
 	public void setUp() {
-		mock = createNiceMock(TicketRepository.class);
+		mock = mock(TicketRepository.class);
 		
 		service = new TicketService(mock);
 		currentUser = User.signIn("user", "secret");
@@ -22,8 +23,7 @@ public class TicketServiceTest {
 
 	@Test
 	public void WhenOrderingAnAvailableTicket_ItShould_ReturnTheTicket() throws NoTicketsAvailableException {
-		expect(mock.getAvailableTicketsForConcert("AAA")).andReturn(1);
-		replay(mock);
+		when(mock.getAvailableTicketsForConcert("AAA")).thenReturn(1);
 		
 		Ticket expected = service.orderTicket("AAA", currentUser);
 		assertThat(expected, is(notNullValue()));
@@ -31,8 +31,7 @@ public class TicketServiceTest {
 
 	@Test
 	public void WhenOrderingAnAvailableTicket_ItShould_ReturnATicketForTheRightConcert() throws NoTicketsAvailableException {
-		expect(mock.getAvailableTicketsForConcert("AAA")).andReturn(1);
-		replay(mock);
+		when(mock.getAvailableTicketsForConcert("AAA")).thenReturn(1);
 		
 		Ticket expected = service.orderTicket("AAA", currentUser);
 		assertThat(expected.getConcertCode(), is(equalTo("AAA")));
@@ -40,8 +39,7 @@ public class TicketServiceTest {
 
 	@Test(expected=NoTicketsAvailableException.class)
 	public void WhenOrderingAnUnAvailableTicket_ItShould_Throw() throws NoTicketsAvailableException {
-		expect(mock.getAvailableTicketsForConcert("DDD")).andReturn(0);
-		replay(mock);
+		when(mock.getAvailableTicketsForConcert("AAA")).thenReturn(1);
 		
 		Ticket expected = service.orderTicket("DDD", currentUser);
 		assertThat(expected.getConcertCode(), is(equalTo("DDD")));
@@ -49,11 +47,13 @@ public class TicketServiceTest {
 	
 	@Test(expected=NoTicketsAvailableException.class)
 	public void WhenOrderingATicketAfterStockRanOut_ItShould_Throw() throws NoTicketsAvailableException {
-		expect(mock.getAvailableTicketsForConcert("AAA")).andReturn(1);
-		expect(mock.getAvailableTicketsForConcert("AAA")).andReturn(0);
-		replay(mock);
+		when(mock.getAvailableTicketsForConcert("AAA")).thenReturn(1);
+		when(mock.getAvailableTicketsForConcert("AAA")).thenReturn(0);
 		
 		Ticket expected = service.orderTicket("AAA", currentUser);
+		
+		verify(mock).save(Mockito.any(Ticket.class));
+		
 		expected = service.orderTicket("AAA", currentUser);
 		assertThat(expected.getConcertCode(), is(equalTo("AAA")));
 	}
